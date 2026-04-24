@@ -30,13 +30,19 @@
       --ease:       cubic-bezier(.4,0,.2,1);
     }
 
-    html { scroll-behavior: smooth; }
+    html {
+      scroll-behavior: smooth;
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
 
     body {
       font-family: var(--font-sans);
       background: var(--cream);
       color: var(--ink);
       overflow-x: hidden;
+      overscroll-behavior-y: none;
+      -webkit-overflow-scrolling: touch;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.028'/%3E%3C/svg%3E");
     }
 
@@ -51,6 +57,10 @@
       position: fixed; pointer-events: none; z-index: 9998;
       transform: translate(-50%,-50%);
       transition: transform .18s var(--ease), width .25s var(--ease), height .25s var(--ease);
+    }
+    /* タッチデバイスではカスタムカーソルを非表示 */
+    @media (hover: none), (pointer: coarse) {
+      .cursor-dot, .cursor-ring { display: none !important; }
     }
 
     /* ── HEADER ── */
@@ -95,6 +105,7 @@
     /* ── HERO ── */
     #hero {
       padding-top: 68px; min-height: 100vh;
+      min-height: 100dvh;
       position: relative; display: grid; grid-template-columns: 1fr 1fr;
       overflow: hidden;
     }
@@ -544,11 +555,33 @@
 
     /* ── RESPONSIVE ── */
     @media (max-width: 1024px) {
-      #hero { grid-template-columns: 1fr; min-height: auto; }
-      .hero-left { padding: 32px 48px 80px; min-height: calc(100vh - 68px); justify-content: flex-start; }
+      #hero {
+        grid-template-columns: 1fr;
+        /* autoだとhero-leftのmin-heightに追従して伸縮するので明示固定 */
+        min-height: 100vh;
+        min-height: 100dvh;
+      }
+      .hero-left {
+        padding: 32px 48px 80px;
+        min-height: calc(100vh - 68px);
+        min-height: calc(100dvh - 68px);
+        justify-content: flex-start;
+      }
       .hero-left::after { display: none; }
-      .hero-right { position: absolute; inset: 0; z-index: 0; }
-      .hero-right img.hero-photo { opacity: .2; }
+      .hero-right {
+        position: absolute; inset: 0; z-index: 0;
+        overflow: hidden;
+        height: 100%;
+      }
+      .hero-right img.hero-photo {
+        opacity: .2;
+        transition: none;
+        will-change: auto;
+        transform: none !important;
+        /* 画像をコンテナに対して固定配置にし、vh依存を排除 */
+        width: 100%; height: 100%;
+        object-fit: cover; object-position: center center;
+      }
       .hero-left { background: transparent; z-index: 2; }
       .price-grid { grid-template-columns: repeat(2,1fr); }
       .price-grid-bottom { grid-template-columns: repeat(2,1fr); }
@@ -568,7 +601,12 @@
       .price-grid, .price-grid-bottom { grid-template-columns: 1fr; }
 
       /* 修正3: ファーストビューがページ中央にならないよう上部寄せ */
-      .hero-left { padding: 24px 24px 60px; justify-content: flex-start; min-height: calc(100vh - 68px); }
+      .hero-left {
+        padding: 24px 24px 60px;
+        justify-content: flex-start;
+        min-height: calc(100vh - 68px);
+        min-height: calc(100dvh - 68px);
+      }
       .hero-tag { margin-bottom: 20px; }
       .hero-title { margin-bottom: 20px; }
       .hero-desc { margin-bottom: 32px; }
@@ -1014,25 +1052,37 @@
   </footer>
 
   <script>
-    // Custom cursor
-    const dot = document.getElementById('cursorDot');
-    const ring = document.getElementById('cursorRing');
-    let mx=0, my=0, rx=0, ry=0;
-    document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; });
-    (function loop(){
-      rx += (mx-rx)*.14; ry += (my-ry)*.14;
-      dot.style.left=mx+'px'; dot.style.top=my+'px';
-      ring.style.left=rx+'px'; ring.style.top=ry+'px';
-      requestAnimationFrame(loop);
-    })();
-    document.querySelectorAll('a,button,.menu-item,.badge').forEach(el=>{
-      el.addEventListener('mouseenter',()=>{ ring.style.width=ring.style.height='56px'; ring.style.borderColor='rgba(201,168,76,.7)'; });
-      el.addEventListener('mouseleave',()=>{ ring.style.width=ring.style.height='32px'; ring.style.borderColor='rgba(201,168,76,.45)'; });
-    });
+    // Custom cursor(タッチデバイスでは不要なのでスキップ)
+    const isTouchDevice = window.matchMedia('(hover: none), (pointer: coarse)').matches;
+    if (!isTouchDevice) {
+      const dot = document.getElementById('cursorDot');
+      const ring = document.getElementById('cursorRing');
+      let mx=0, my=0, rx=0, ry=0;
+      document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; });
+      (function loop(){
+        rx += (mx-rx)*.14; ry += (my-ry)*.14;
+        dot.style.left=mx+'px'; dot.style.top=my+'px';
+        ring.style.left=rx+'px'; ring.style.top=ry+'px';
+        requestAnimationFrame(loop);
+      })();
+      document.querySelectorAll('a,button,.menu-item,.badge').forEach(el=>{
+        el.addEventListener('mouseenter',()=>{ ring.style.width=ring.style.height='56px'; ring.style.borderColor='rgba(201,168,76,.7)'; });
+        el.addEventListener('mouseleave',()=>{ ring.style.width=ring.style.height='32px'; ring.style.borderColor='rgba(201,168,76,.45)'; });
+      });
+    }
 
-    // Header scroll
+    // Header scroll(passive + rAF でスクロール時の描画揺れを防止)
     const hdr = document.getElementById('mainHeader');
-    window.addEventListener('scroll', ()=>{ hdr.classList.toggle('scrolled', window.scrollY>30); });
+    let scrollTicking = false;
+    window.addEventListener('scroll', ()=>{
+      if (!scrollTicking) {
+        requestAnimationFrame(()=>{
+          hdr.classList.toggle('scrolled', window.scrollY>30);
+          scrollTicking = false;
+        });
+        scrollTicking = true;
+      }
+    }, { passive: true });
 
     // Reveal
     const io = new IntersectionObserver(entries=>{
