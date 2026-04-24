@@ -568,29 +568,48 @@
       .price-grid, .price-grid-bottom { grid-template-columns: 1fr; }
 
       /* 修正3: ファーストビューがページ中央にならないよう上部寄せ */
-      .hero-left { padding: 24px 24px 80px; justify-content: flex-start; min-height: calc(100vh - 68px); }
+      .hero-left { padding: 24px 24px 60px; justify-content: flex-start; min-height: calc(100vh - 68px); }
       .hero-tag { margin-bottom: 20px; }
       .hero-title { margin-bottom: 20px; }
       .hero-desc { margin-bottom: 32px; }
-      .hero-badges { margin-bottom: 32px; gap: 14px; }
-      .badge { width: 92px; height: 92px; }
 
-      /* 修正5: スマホCTAボタンのバランス調整 */
+      /* 修正A: バッジアイコン内に文字が収まるようサイズ・タイポを最適化 */
+      .hero-badges { margin-bottom: 32px; gap: 8px; justify-content: space-between; flex-wrap: nowrap; }
+      .badge { width: 104px; height: 104px; gap: 4px; padding: 6px 4px; box-sizing: border-box; flex: 1 1 0; min-width: 0; max-width: 110px; }
+      .badge svg { width: 22px; height: 22px; }
+      .badge-title { font-size: 11px; line-height: 1.25; letter-spacing: 0; white-space: nowrap; }
+      .badge-sub { font-size: 9px; line-height: 1.2; letter-spacing: 0; white-space: nowrap; }
+
+      /* 修正C: CTA2ボタンをデザイン性を持った縦並びに */
       .hero-cta-wrap {
         flex-direction: column; align-items: stretch;
-        gap: 14px; width: 100%; max-width: 320px;
+        gap: 12px; width: 100%; max-width: 360px;
       }
       .btn-primary {
-        justify-content: center; padding: 16px 24px;
+        justify-content: center; padding: 17px 24px;
         width: 100%; box-sizing: border-box;
+        font-size: 14px; letter-spacing: .12em;
       }
+      /* btn-ghost を下線リンクから"セカンダリボタン"に変更 */
       .btn-ghost {
-        text-align: center; align-self: center;
-        padding: 6px 0;
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 100%; box-sizing: border-box;
+        padding: 15px 24px;
+        font-size: 13px; letter-spacing: .12em;
+        color: var(--moss);
+        background: transparent;
+        border: 1px solid var(--moss-pale);
+        border-radius: 2px;
+        text-align: center;
+        padding-bottom: 15px;
       }
+      .btn-ghost:hover { color: var(--moss); border-color: var(--moss); background: rgba(143,166,90,.08); }
 
       /* 修正6: スマホで葉っぱデコがCTAに被らないよう非表示 */
       .hero-plant { display: none; }
+
+      /* 修正B: SCROLLヒントがCTAと重ならないよう、スマホでは非表示 */
+      .scroll-hint { display: none; }
 
       .room-overlay { padding: 36px 24px; }
       footer { padding: 20px 24px; flex-direction: column; gap: 12px; text-align: center; }
@@ -599,6 +618,15 @@
       /* スマホでのフッターCTAバッジ保護(完全な丸を維持) */
       .cta-left { flex-direction: column; align-items: center; gap: 20px; text-align: center; }
       .cta-text { text-align: center; }
+    }
+
+    /* 超小型スマホ対応(iPhone SE等) */
+    @media (max-width: 380px) {
+      .hero-left { padding: 20px 16px 60px; }
+      .badge { width: 92px; height: 92px; }
+      .badge svg { width: 20px; height: 20px; }
+      .badge-title { font-size: 10px; }
+      .badge-sub { font-size: 8.5px; }
     }
   </style>
 </head>
