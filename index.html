@@ -34,6 +34,7 @@
       scroll-behavior: smooth;
       -webkit-text-size-adjust: 100%;
       text-size-adjust: 100%;
+      scroll-padding-top: 0;
     }
 
     body {
@@ -557,15 +558,19 @@
     @media (max-width: 1024px) {
       #hero {
         grid-template-columns: 1fr;
-        /* autoだとhero-leftのmin-heightに追従して伸縮するので明示固定 */
+        /* padding-topを0にしてhero-left内でヘッダー分のオフセットを持たせる */
+        padding-top: 0;
         min-height: 100vh;
         min-height: 100dvh;
       }
       .hero-left {
-        padding: 32px 48px 80px;
-        min-height: calc(100vh - 68px);
-        min-height: calc(100dvh - 68px);
+        /* padding-top に 68+α でヘッダー分 + 余白 */
+        padding: 88px 48px 40px;
+        /* 画面ちょうどに収まるようにmin-heightは 100dvh に固定 */
+        min-height: 100vh;
+        min-height: 100dvh;
         justify-content: flex-start;
+        box-sizing: border-box;
       }
       .hero-left::after { display: none; }
       .hero-right {
@@ -600,12 +605,13 @@
       #price { padding: 80px 24px; }
       .price-grid, .price-grid-bottom { grid-template-columns: 1fr; }
 
-      /* 修正3: ファーストビューがページ中央にならないよう上部寄せ */
+      /* 修正3: ファーストビューがページ上部から始まるよう再調整 */
       .hero-left {
-        padding: 24px 24px 60px;
+        padding: 84px 24px 40px;
         justify-content: flex-start;
-        min-height: calc(100vh - 68px);
-        min-height: calc(100dvh - 68px);
+        min-height: 100vh;
+        min-height: 100dvh;
+        box-sizing: border-box;
       }
       .hero-tag { margin-bottom: 20px; }
       .hero-title { margin-bottom: 20px; }
@@ -1052,6 +1058,40 @@
   </footer>
 
   <script>
+    // ── 初期スクロール位置を確実に最上部に固定 ──
+    // ブラウザのスクロール位置自動復元を無効化
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+
+    // scroll-behavior: smooth が scrollTo(0,0) のジャンプを邪魔しないように
+    // 初期化中は一時的にinstantへ切り替える
+    const htmlEl = document.documentElement;
+    const originalScrollBehavior = getComputedStyle(htmlEl).scrollBehavior;
+    htmlEl.style.scrollBehavior = 'auto';
+
+    // 即時・DOM構築時・画像含む全ロード完了時の3段階で強制的に最上部へ
+    window.scrollTo(0, 0);
+
+    document.addEventListener('DOMContentLoaded', () => {
+      window.scrollTo(0, 0);
+    });
+
+    window.addEventListener('load', () => {
+      window.scrollTo(0, 0);
+      // すべてのロードが完了してから smooth を元に戻す
+      setTimeout(() => {
+        htmlEl.style.scrollBehavior = '';
+      }, 100);
+    });
+
+    // ページ表示時(bfcache等でのリストア時を含む)にも最上部へ
+    window.addEventListener('pageshow', (e) => {
+      if (e.persisted || performance.getEntriesByType('navigation')[0]?.type === 'reload') {
+        window.scrollTo(0, 0);
+      }
+    });
+
     // Custom cursor(タッチデバイスでは不要なのでスキップ)
     const isTouchDevice = window.matchMedia('(hover: none), (pointer: coarse)').matches;
     if (!isTouchDevice) {
